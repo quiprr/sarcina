@@ -1,0 +1,6 @@
+__temp__/
+iphoneos-arm/*.deb
+Packages
+Packages.*
+Release
+meta/*.conf
