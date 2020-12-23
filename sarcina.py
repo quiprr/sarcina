@@ -67,10 +67,6 @@ def removeTempFiles():
         shutil.rmtree(TEMP_DIR)
     except:
         pass
-    try:
-        os.mkdir(TEMP_DIR)
-    except:
-        pass
 
 def generatePackages():
     os.system(f"{APTFTPARCHIVE} -q -q packages {PACKAGES_DIR} > Packages")
@@ -81,6 +77,7 @@ def generatePackages():
 
 def generateRelease():
     os.system(f"{APTFTPARCHIVE} -q -q release -c meta/repo.conf . > Release")
+    print("fr")
 
 if not PACKAGES_DIR or not TEMP_DIR or not REPO_DIR:
     logging.fatal("One of your directory statics are empty. Please fill said static with the correct path, then run this script.")
@@ -91,12 +88,17 @@ if not APTFTPARCHIVE or not GZIP or not BZIP2 or not XZIP or not ZSTANDARD:
     exit()
 
 logging.debug("All necessary statics exist.")
+try:
+    os.mkdir(TEMP_DIR)
+except:
+    pass
 
 for root, dirs, files in os.walk(PACKAGES_DIR):
     for packageName in files:
         if packageName.endswith('.deb'):
             packageTempDirName = packageName[:-len(".deb")]
             os.mkdir(f"{TEMP_DIR}/{packageTempDirName}")
+            pkgStartTime = time.time()
             os.system(f"dpkg-deb --raw-extract {PACKAGES_DIR}/{packageName} {TEMP_DIR}/{packageTempDirName} 1>/dev/null")
             logging.debug(f"Package {PACKAGES_DIR}/{packageName} extracted to directory {TEMP_DIR}/{packageTempDirName}.")
             with open(f'{TEMP_DIR}/{packageTempDirName}/DEBIAN/control', 'r') as controlFile:
@@ -106,7 +108,6 @@ for root, dirs, files in os.walk(PACKAGES_DIR):
                 controlData["Depiction"] = f"{WEBDEPICTION_URL}{packageBundleIdentifier}"
                 controlData["SileoDepiction"] = f"{SILEODEPICTION_URL}/{packageBundleIdentifier}/depiction.json"
             with open(f'{TEMP_DIR}/{packageTempDirName}/DEBIAN/control', 'w') as controlFile:
-                pkgStartTime = time.time()
                 yaml.dump(controlData, controlFile)
                 os.remove(f"{PACKAGES_DIR}/{packageName}")
                 os.system(f"dpkg-deb -b {TEMP_DIR}/{packageTempDirName} {PACKAGES_DIR}/{packageName} 1>/dev/null")

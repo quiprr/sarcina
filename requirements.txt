@@ -1,1 +1,3 @@
 pyyaml
+unix-ar
+zstandard

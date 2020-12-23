@@ -3,4 +3,6 @@ iphoneos-arm/*.deb
 Packages
 Packages.*
 Release
-meta/*.conf
+Release.temp
+meta/*.yml
+.vscode/
